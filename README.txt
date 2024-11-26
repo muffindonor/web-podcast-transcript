@@ -1,2 +1,2 @@
 This is our repo for the Advanced Web Course
-The topic is a website for Podcast episode transcription,notes and timestamp, as well as SEO Optimization
+The topic is a website for Podcast episode transcription, generating corresponding notes and timestamp and implementing SEO Optimization
