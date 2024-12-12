@@ -19,7 +19,7 @@ const contentDatabase = {
 
     // Rating section HTML
     ratingSection: `
-    <div class="mt-8 text-center">
+    <div class="mt-8 text-center" id="ratingContainer">
       <h2 class="text-lg mb-2 text-gray-900 dark:text-gray-100">Rate us:</h2>
       <div class="flex justify-center space-x-2 text-xl sm:text-2xl">
         <span class="star text-gray-300 dark:text-gray-500 cursor-pointer" onclick="setRating(1)">☆</span>
@@ -28,10 +28,9 @@ const contentDatabase = {
         <span class="star text-gray-300 dark:text-gray-500 cursor-pointer" onclick="setRating(4)">☆</span>
         <span class="star text-gray-300 dark:text-gray-500 cursor-pointer" onclick="setRating(5)">☆</span>
       </div>
+      <p id="ratingFeedback" class="mt-2 text-gray-700 dark:text-gray-300" style="display: none;"></p>
     </div>
   `,
-
-
   };
   
   // Render function to dynamically insert content

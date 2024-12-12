@@ -85,6 +85,11 @@ fileUpload.addEventListener('change', () => {
 // Adding the setRating function for star rating
 function setRating(rating) {
   const stars = document.querySelectorAll('.star');
+  const ratingFeedback = document.getElementById('ratingFeedback');
+
+  if (window.hasVoted) {
+    return;
+  }
   
   stars.forEach((star, index) => {
     // Check if the index is less than the rating
@@ -97,7 +102,19 @@ function setRating(rating) {
       star.classList.add('text-gray-300', 'dark:text-gray-500');
       star.classList.remove('text-yellow-500');
     }
+
+    star.onclick = null;
+    star.classList.remove('cursor-pointer');
+    
   });
+  window.hasVoted = true;
+  
+  // Show thank you message
+  if (ratingFeedback) {
+    ratingFeedback.textContent = `Thank you for rating us!`;
+    ratingFeedback.style.display = 'block';
+  }
+
 }
 
 document.getElementById("SummarizeBtn").addEventListener("click",function(){
