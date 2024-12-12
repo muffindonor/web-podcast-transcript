@@ -4,8 +4,10 @@ const htmlElement = document.documentElement;
 const fileUpload = document.getElementById('fileUpload');
 const fileNameDisplay = document.getElementById('fileName');
 
-const summarizeButton = document.querySelector('button[onclick="summarizeText()"]');
+//const summarizeButton = document.querySelector('button[onclick="summarizeText()"]');
 const outputSection = document.querySelector('.p-4.border');
+
+const summarizeParagraph = document.getElementById("summarizeParagraph");
 
 // Toggle theme between dark and light mode
 themeToggle.addEventListener('click', () => {
@@ -36,16 +38,48 @@ document.addEventListener('DOMContentLoaded', () => {
 fileUpload.addEventListener('change', () => {
   const file = fileUpload.files[0];
   fileNameDisplay.textContent = file ? `Uploaded: ${file.name}` : '';
+  if (file) {
+    // Hardcoded transcription table
+    const transcriptionTable = `
+      <h2 class="font-bold mb-2">Output:</h2>
+      <table class="table-auto w-full border-collapse border border-gray-400 dark:border-gray-700 text-left">
+        <thead>
+          <tr>
+            <th class="border border-gray-400 dark:border-gray-700 px-4 py-2">Timestamp</th>
+            <th class="border border-gray-400 dark:border-gray-700 px-4 py-2">Transcription</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border border-gray-400 dark:border-gray-700 px-4 py-2">00:00:01</td>
+            <td class="border border-gray-400 dark:border-gray-700 px-4 py-2">Hello, and welcome to the podcast transcribe website.</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-400 dark:border-gray-700 px-4 py-2">00:00:10</td>
+            <td class="border border-gray-400 dark:border-gray-700 px-4 py-2">This is a mock up of the transcription.</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-400 dark:border-gray-700 px-4 py-2">00:00:15</td>
+            <td class="border border-gray-400 dark:border-gray-700 px-4 py-2">the transcription will show up as a table after the user uploads a</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+
+    // Display the table in the output section
+    const outputSection = document.getElementById('transcribeBorder');
+    outputSection.innerHTML = transcriptionTable;
+  }
 });
 
 // Summarize text handler
-function summarizeText() {
-  outputSection.innerHTML = `
-    <h2 class="font-bold mb-2">Output:</h2>
-    <p>This is a placeholder summary for the uploaded file.</p>
-  `;
-}
-summarizeButton.addEventListener('click', summarizeText);
+//function summarizeText() {
+ // outputSection.innerHTML = `
+ //   <h2 class="font-bold mb-2">Output:</h2>
+ //   <p>This is a placeholder summary for the uploaded file.</p>
+ // `;
+//}
+//summarizeButton.addEventListener('click', summarizeText);
 
 
 // Adding the setRating function for star rating
@@ -65,3 +99,7 @@ function setRating(rating) {
     }
   });
 }
+
+document.getElementById("SummarizeBtn").addEventListener("click",function(){
+  summarizeParagraph.style.display ="block";
+});

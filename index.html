@@ -29,7 +29,7 @@
 
 <!-- Upload file section -->
  <div class="mt-8 p-4 border-2 border-dashed border-blue-400 rounded-md text-center sm:mx-auto sm:w-3/4 md:w-1/2 bg-white dark:bg-gray-800">
-   <p id="uploadText" class="text-lg text-gray-900 dark:text-gray-100">
+   <p id="uploadText" class="text-lg text-gray-900 dark:text-gray-100" style="padding-bottom: 16px;">
      <!-- Placeholder for upload text -->
    </p>
    <input type="file" id="fileUpload" class="hidden" accept="audio/*">
@@ -45,15 +45,16 @@
 
   <!-- Summarization & Notes Section -->
   <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div class="p-4 border rounded-md bg-white dark:bg-gray-800 dark:border-gray-700">
+    <div id="transcribeBorder" class="p-4 border rounded-md bg-white dark:bg-gray-800 dark:border-gray-700">
       <h2 class="font-bold mb-2 text-gray-900 dark:text-gray-100">Output:</h2>
       <p class="text-gray-700 dark:text-gray-300">Transcribed text will appear here...</p>
     </div>
-    <div class="p-4 border rounded-md bg-white dark:bg-gray-800 dark:border-gray-700">
-      <h2 class="font-bold mb-2 text-gray-900 dark:text-gray-100">Summarize</h2>
-      <button class="mt-4 bg-blue-500 px-4 py-2 rounded-md text-white hover:bg-blue-600 dark:hover:bg-blue-700">
+    <div id="summarizeBorder" class="p-4 border rounded-md bg-white dark:bg-gray-800 dark:border-gray-700">
+      <!--<h2 class="font-bold mb-2 text-gray-900 dark:text-gray-100">Summarize</h2>-->
+      <button id="SummarizeBtn" class="mt-4 bg-blue-500 px-4 py-2 rounded-md text-white hover:bg-blue-600 dark:hover:bg-blue-700">
         Summarize
       </button>
+      <p id="summarizeParagraph" class="text-gray-700 dark:text-gray-300" style="display: none;">This is the paragraph that summarizes the transcribed text. it will appear once the user press "Summarize"</p>
     </div>
   </div>
 
