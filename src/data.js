@@ -10,11 +10,11 @@ const contentDatabase = {
     aboutUsText: "Welcome to the Podcast App, your one-stop solution for podcast transcription, summaries, and SEO optimization. Our mission is to make podcast content more accessible and engaging for everyone.",
     // Team members data
     teamMembers: [
-      { name: "Bruce Willis", role: "Senior Developer", image: "dev1.jpg" },
-      { name: "John Travolta", role: "Senior Developer", image: "dev2.jpg" },
-      { name: "Nicolas Cage", role: "Senior Developer", image: "dev3.jpg" },
-      { name: "Quentin Tarantino", role: "Developer", image: "dev4.jpg" },
-      { name: "Ryan Gosling", role: "Developer", image: "dev5.jpg" },
+      { name: "Shay Liberman", role: "Developer", image: "dev1.jpg" },
+      { name: "Daniel Levovsky", role: "Developer", image: "dev2.jpg" },
+      { name: "Abed Al Hamid", role: "Developer", image: "dev3.jpg" },
+      { name: "Heba", role: "Developer", image: "dev4.jpg" },
+      { name: "Shahed", role: "Developer", image: "dev5.jpg" },
     ],
 
     // Rating section HTML
