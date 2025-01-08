@@ -1,35 +1,50 @@
 import { useState } from 'react';
 import AudioUploader from '../components/AudioUploader';
 import StarRating from '../components/StarRating';
-import { Search, Clock, BookOpen, FileText, ListTodo } from 'lucide-react';
+import { Search, Clock, FileText, ListTodo, BookOpen } from 'lucide-react';
 
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [transcriptionResult, setTranscriptionResult] = useState({
+    text: '',
+    chapters: [],
+    speakers: [],
+    summary: ''
+  });
+
+  const formatTime = (timeInSeconds) => {
+    const hours = Math.floor(timeInSeconds / 3600);
+    const minutes = Math.floor((timeInSeconds % 3600) / 60);
+    const seconds = timeInSeconds % 60;
+
+    const pad = (num) => num.toString().padStart(2, '0');
+
+    if (hours > 0) {
+      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    }
+    return `${pad(minutes)}:${pad(seconds)}`;
+  };
 
   return (
     <div className="min-h-screen pt-20 px-4 md:px-8 max-w-7xl mx-auto">
-      <h1 style={{ color: 'var(--primary-text)' }} className="text-4xl md:text-6xl font-bold text-center mb-8">
-        Transform Audio to Text
-      </h1>
-      <p style={{ color: 'var(--secondary-text)' }} className="text-lg md:text-xl text-center mb-12 max-w-2xl mx-auto">
+      <h1 className="main-title">Transform Audio to Text</h1>
+      <p className="main-subtitle">
         Convert your audio files to text with high accuracy using SoundScribe
       </p>
 
-      {/* Audio Upload Section */}
       <section className="mb-12">
-        <AudioUploader />
+        <AudioUploader onTranscriptionComplete={setTranscriptionResult} />
       </section>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+      <div className="content-grid">
         {/* Text Output Section */}
         <section className="section-card">
           <h2 className="section-title">
             <FileText size={24} className="text-blue-500" />
             Transcribed Text
           </h2>
-          <div className="section-content min-h-[200px]">
-            <p className="text-gray-500">Your transcribed text will appear here...</p>
+          <div className="section-content">
+            <p>{transcriptionResult.text || 'Your transcribed text will appear here...'}</p>
           </div>
         </section>
 
@@ -39,8 +54,14 @@ const Home = () => {
             <ListTodo size={24} className="text-blue-500" />
             Notes & Topics
           </h2>
-          <div className="section-content min-h-[200px]">
-            <p className="text-gray-500">Your notes will appear here...</p>
+          <div className="section-content">
+            <p>
+              {transcriptionResult.chapters?.map((chapter, index) => (
+                <div key={index} className="mb-2">
+                  • {chapter.gist}
+                </div>
+              )) || 'Your notes will appear here...'}
+            </p>
           </div>
         </section>
 
@@ -50,10 +71,21 @@ const Home = () => {
             <BookOpen size={24} className="text-blue-500" />
             Summary
           </h2>
-          <div className="section-content min-h-[200px] mb-4">
-            <p className="text-gray-500">Summary will appear here...</p>
+          <div className="section-content mb-4">
+            <p>{transcriptionResult.summary || 'Summary will appear here...'}</p>
           </div>
-          <button className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+          <button 
+            onClick={() => {
+              if (transcriptionResult.text && !transcriptionResult.summary) {
+                setTranscriptionResult(prev => ({
+                  ...prev,
+                  summary: 'Generating summary...'
+                }));
+              }
+            }}
+            disabled={!transcriptionResult.text || transcriptionResult.summary}
+            className="generate-button"
+          >
             Generate Summary
           </button>
         </section>
@@ -65,10 +97,24 @@ const Home = () => {
             Topic Timestamps
           </h2>
           <div className="section-content">
-            <div className="timestamp-item">
-              <Clock size={16} />
-              <span>00:00 - Introduction</span>
-            </div>
+            {transcriptionResult.chapters?.length > 0 ? (
+              transcriptionResult.chapters.map((chapter, index) => {
+                const timeInSeconds = Math.floor(chapter.start / 1000);
+                const formattedTime = formatTime(timeInSeconds);
+
+                return (
+                  <div key={index} className="timestamp-item">
+                    <Clock size={16} className="text-blue-500" />
+                    <span>{formattedTime} - {chapter.headline}</span>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="timestamp-item">
+                <Clock size={16} className="text-blue-500" />
+                <span>00:00 - Introduction</span>
+              </div>
+            )}
           </div>
         </section>
       </div>
@@ -92,9 +138,7 @@ const Home = () => {
       <section className="section-card text-center mb-12">
         <h2 className="section-title justify-center">Rate Your Experience</h2>
         <StarRating />
-        <p className="mt-4 text-sm text-gray-500">
-          Your feedback helps us improve our service
-        </p>
+        <p className="mt-4 text-sm">Your feedback helps us improve our service</p>
       </section>
     </div>
   );
