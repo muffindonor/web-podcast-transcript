@@ -26,6 +26,7 @@ const Home = () => {
     return ${pad(minutes)}:${pad(seconds)};
   };*/
 
+
   const generateSummary = async () => {
     setIsGeneratingSummary(true);
     try {
@@ -34,7 +35,7 @@ const Home = () => {
         {
           method: "POST",
           headers: {
-            "Authorization": "Bearer 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",
+            "Authorization": "Bearer (HAVE YOUR TOKEN PLACED HERE)", // COPY THE TOKEN FROM THE .ENV FILE
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
