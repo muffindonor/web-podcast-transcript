@@ -116,3 +116,30 @@ body {
 .generate-button:disabled {
   @apply bg-gray-400 cursor-not-allowed;
 }
+
+
+
+/* Crew Section Specific Styles */
+.crew-card {
+  @apply rounded-lg shadow-lg p-4 bg-white transition-transform;
+  transform: scale(1);
+}
+
+.crew-card:hover {
+  @apply bg-gray-100;
+  transform: scale(1.05);
+}
+
+.crew-card img {
+  @apply w-24 h-24 mx-auto rounded-full border-2 border-gray-300;
+}
+
+.crew-card h3 {
+  @apply text-lg font-semibold mt-4;
+  color: var(--primary-text);
+}
+
+.crew-card p {
+  @apply text-sm text-gray-600;
+  color: var(--secondary-text);
+}

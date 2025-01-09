@@ -8,11 +8,12 @@ const Home = () => {
   const [transcriptionResult, setTranscriptionResult] = useState({
     text: '',
     chapters: [],
-    speakers: [],
-    summary: ''
+    speakers: []
   });
+  const [summary, setSummary] = useState('');
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
 
-  const formatTime = (timeInSeconds) => {
+  /*const formatTime = (timeInSeconds) => {
     const hours = Math.floor(timeInSeconds / 3600);
     const minutes = Math.floor((timeInSeconds % 3600) / 60);
     const seconds = timeInSeconds % 60;
@@ -20,9 +21,40 @@ const Home = () => {
     const pad = (num) => num.toString().padStart(2, '0');
 
     if (hours > 0) {
-      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      return ${pad(hours)}:${pad(minutes)}:${pad(seconds)};
     }
-    return `${pad(minutes)}:${pad(seconds)}`;
+    return ${pad(minutes)}:${pad(seconds)};
+  };*/
+
+  const generateSummary = async () => {
+    setIsGeneratingSummary(true);
+    try {
+      const response = await fetch(
+        "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
+        {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer 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",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            inputs: transcriptionResult.text,
+            parameters: {
+              max_length: 130,
+              min_length: 30,
+            },
+          }),
+        }
+      );
+
+      const result = await response.json();
+      setSummary(result[0].summary_text);
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      setSummary("Error generating summary. Please try again.");
+    } finally {
+      setIsGeneratingSummary(false);
+    }
   };
 
   return (
@@ -37,7 +69,6 @@ const Home = () => {
       </section>
 
       <div className="content-grid">
-        {/* Text Output Section */}
         <section className="section-card">
           <h2 className="section-title">
             <FileText size={24} className="text-blue-500" />
@@ -48,7 +79,6 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Notes Section */}
         <section className="section-card">
           <h2 className="section-title">
             <ListTodo size={24} className="text-blue-500" />
@@ -65,32 +95,23 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Summary Section */}
         <section className="section-card">
           <h2 className="section-title">
             <BookOpen size={24} className="text-blue-500" />
             Summary
           </h2>
           <div className="section-content mb-4">
-            <p>{transcriptionResult.summary || 'Summary will appear here...'}</p>
+            <p>{summary || 'Summary will appear here...'}</p>
           </div>
           <button 
-            onClick={() => {
-              if (transcriptionResult.text && !transcriptionResult.summary) {
-                setTranscriptionResult(prev => ({
-                  ...prev,
-                  summary: 'Generating summary...'
-                }));
-              }
-            }}
-            disabled={!transcriptionResult.text || transcriptionResult.summary}
+            onClick={generateSummary}
+            disabled={!transcriptionResult.text || isGeneratingSummary}
             className="generate-button"
           >
-            Generate Summary
+            {isGeneratingSummary ? 'Generating...' : 'Generate Summary'}
           </button>
         </section>
 
-        {/* Timestamp Section */}
         <section className="section-card">
           <h2 className="section-title">
             <Clock size={24} className="text-blue-500" />
@@ -119,7 +140,6 @@ const Home = () => {
         </section>
       </div>
 
-      {/* Search Section */}
       <section className="section-card mb-12">
         <h2 className="section-title">
           <Search size={24} className="text-blue-500" />
@@ -134,7 +154,6 @@ const Home = () => {
         />
       </section>
 
-      {/* Rating Section */}
       <section className="section-card text-center mb-12">
         <h2 className="section-title justify-center">Rate Your Experience</h2>
         <StarRating />
@@ -144,4 +163,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Home;

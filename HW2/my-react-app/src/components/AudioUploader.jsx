@@ -1,111 +1,133 @@
 import { useState } from 'react';
 import { FileAudio } from 'lucide-react';
 
+// AudioUploader component to handle the file upload and transcription process
 const AudioUploader = ({ onTranscriptionComplete }) => {
-  const [file, setFile] = useState(null);
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [file, setFile] = useState(null);  // State to store the selected file
+  const [isTranscribing, setIsTranscribing] = useState(false);  // State to track if transcription is in progress
+  const [uploadProgress, setUploadProgress] = useState(0);  // State to track the upload progress
+  const [error, setError] = useState(null);  // State to store any error messages
 
+  // Handle file input change (selecting a file)
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile && selectedFile.type.includes('audio')) {
-      setFile(selectedFile);
+    const selectedFile = e.target.files[0];  // Get the selected file
+    if (selectedFile && selectedFile.type.includes('audio')) {  // Check if it's an audio file
+      setFile(selectedFile);  // Set the selected file
+      setError(null);  // Reset any error message
     }
   };
 
+  // Handle the transcription process
   const handleTranscribe = async () => {
-    if (!file) {
-      console.log('No file selected');
+    if (!file) {  // If no file is selected, set an error message
+      setError('No file selected');
       return;
     }
 
     try {
-      console.log('Starting transcription process...');
-      setIsTranscribing(true);
+      setError(null);  // Clear any previous error
+      setIsTranscribing(true);  // Start transcription process
+      console.log('Starting transcription process...', file);
 
-      console.log('File to upload:', file);
-
-      // Upload the file
+      // Upload the selected file to the AssemblyAI API
       const uploadResponse = await fetch('https://api.assemblyai.com/v2/upload', {
         method: 'POST',
         headers: {
-          'Authorization': "361415b9f3e244d5abc4def7278d3005"
+          'Authorization': "361415b9f3e244d5abc4def7278d3005"  // Replace with your actual API key
         },
-        body: file
+        body: file  // Send the file as the request body
       });
 
-      if (!uploadResponse.ok) {
-        console.error('Upload failed:', await uploadResponse.text());
-        return;
+      if (!uploadResponse.ok) {  // Check if the upload was successful
+        throw new Error('Upload failed: ' + await uploadResponse.text());
       }
 
-      const uploadResult = await uploadResponse.json();
+      const uploadResult = await uploadResponse.json();  // Parse the response from the upload
       console.log('Upload successful, URL:', uploadResult.upload_url);
 
-      // Start transcription with only auto_chapters enabled
+      // Request transcription from the AssemblyAI API
       const transcriptResponse = await fetch('https://api.assemblyai.com/v2/transcript', {
         method: 'POST',
         headers: {
-          'Authorization': "361415b9f3e244d5abc4def7278d3005",
+          'Authorization': "361415b9f3e244d5abc4def7278d3005",  // Replace with your actual API key
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          audio_url: uploadResult.upload_url,
-          auto_chapters: false,
-          auto_highlights: true // This will help with timestamps
+          audio_url: uploadResult.upload_url,  // Pass the uploaded audio URL
+          language_code: "en_us",  // Set the language code for transcription
+          punctuate: true,  // Enable punctuation in the transcription
+          format_text: true  // Format the text output
         })
       });
 
-      if (!transcriptResponse.ok) {
-        console.error('Transcription request failed:', await transcriptResponse.text());
-        return;
+      if (!transcriptResponse.ok) {  // Check if the transcription request was successful
+        throw new Error('Transcription request failed: ' + await transcriptResponse.text());
       }
 
-      const transcriptResult = await transcriptResponse.json();
+      const transcriptResult = await transcriptResponse.json();  // Parse the transcription response
       console.log('Transcription initiated:', transcriptResult);
 
-      // Poll for completion
+      // Function to poll the transcription status until it's completed
       const checkCompletion = async (transcriptId) => {
         const pollingEndpoint = `https://api.assemblyai.com/v2/transcript/${transcriptId}`;
-        
-        while (true) {
-          const pollResponse = await fetch(pollingEndpoint, {
-            headers: { 'Authorization': "361415b9f3e244d5abc4def7278d3005" }
-          });
-          
-          const result = await pollResponse.json();
-          console.log('Polling result:', result);
-          
-          if (result.status === 'completed') {
-            console.log('Transcription completed. Full response:', result);
-            console.log('Chapters:', result.chapters);
-            onTranscriptionComplete({
-              text: result.text,
-              chapters: result.chapters || [],
-              speakers: result.speaker_labels || [],
-              summary: result.summary || ''
-            });
-            break;
-          } else if (result.status === 'error') {
-            console.error('Transcription error:', result.error);
-            break;
+        let attempts = 0;  // Initialize the attempt counter
+        const maxAttempts = 40;  // Set maximum attempts (2 minutes max polling)
+
+        const pollInterval = setInterval(async () => {
+          if (attempts >= maxAttempts) {  // If max attempts are reached, stop polling
+            clearInterval(pollInterval);
+            setError('Transcription timed out');
+            setIsTranscribing(false);
+            return;
           }
-          
-          // Wait for 3 seconds before polling again
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        }
+
+          try {
+            const pollResponse = await fetch(pollingEndpoint, {
+              headers: { 'Authorization': "361415b9f3e244d5abc4def7278d3005" }  // Replace with your actual API key
+            });
+
+            if (!pollResponse.ok) {  // If polling failed
+              throw new Error('Polling failed');
+            }
+
+            const result = await pollResponse.json();  // Parse the polling response
+            console.log('Complete API Response:', result);  // Log full response for debugging
+            console.log('Available data fields:', Object.keys(result));  // Log available fields for inspection
+            console.log(`Attempt ${attempts + 1}, Status: ${result.status}`);  // Log polling status
+
+            if (result.status === 'completed') {  // If transcription is complete
+              clearInterval(pollInterval);  // Stop polling
+              onTranscriptionComplete({  // Call the onTranscriptionComplete callback with the results
+                text: result.text || '',
+                chapters: result.chapters || [],
+                speakers: result.speaker_labels || [],
+                summary: result.summary || ''
+              });
+              setIsTranscribing(false);  // Set transcription to finished
+            } else if (result.status === 'error') {  // If transcription failed
+              clearInterval(pollInterval);  // Stop polling
+              throw new Error(result.error);  // Throw an error
+            }
+
+            attempts++;  // Increment attempt counter
+          } catch (error) {  // Handle any errors during polling
+            clearInterval(pollInterval);  // Stop polling on error
+            console.error('Polling error:', error);
+            setError(error.message);  // Set error state
+            setIsTranscribing(false);  // Set transcription to finished
+          }
+        }, 3000);  // Poll every 3 seconds
       };
 
-      await checkCompletion(transcriptResult.id);
+      await checkCompletion(transcriptResult.id);  // Start polling with the transcription ID
 
-    } catch (error) {
+    } catch (error) {  // Handle any errors in the transcription process
       console.error('Transcription process error:', error);
-    } finally {
-      setIsTranscribing(false);
-      setUploadProgress(0);
+      setError(error.message);  // Set error state
+      setIsTranscribing(false);  // Set transcription to finished
     }
   };
-
+  
   return (
     <div className="w-full max-w-2xl mx-auto">
       <label 
@@ -135,6 +157,12 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
         onChange={handleFileChange}
         className="hidden"
       />
+
+      {error && (
+        <div className="mt-4 p-3 text-sm text-red-500 bg-red-50 rounded-lg">
+          {error}
+        </div>
+      )}
 
       {file && (
         <div className="mt-4">
