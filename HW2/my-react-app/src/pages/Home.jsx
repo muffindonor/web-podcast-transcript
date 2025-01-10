@@ -35,7 +35,7 @@ const Home = () => {
         {
           method: "POST",
           headers: {
-            "Authorization": "Bearer (HAVE YOUR TOKEN PLACED HERE)", // COPY THE TOKEN FROM THE .ENV FILE
+            "Authorization": "Bearer ${import.meta.env.VITE_HUGGING_FACE_KEY}", // COPY THE TOKEN FROM THE .ENV FILE
             "Content-Type": "application/json",
           },
           body: JSON.stringify({

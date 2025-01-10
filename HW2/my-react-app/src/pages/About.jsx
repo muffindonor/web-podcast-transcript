@@ -1,6 +1,7 @@
+//src/pages/About.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import teamMembers from "../data/teamMembers";
+import teamMembers from '../data/teamMembers';
 
 const About = () => {
   return (
@@ -19,25 +20,19 @@ const About = () => {
       <h2 className="text-3xl font-bold text-center mb-6">Meet Our Team</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {teamMembers.map((member, index) => (
-          <div
-            key={index}
-            className="section-card text-center hover:shadow-lg transition-shadow"
-          >
-            <img
-              src={member.image}
-              alt={member.name}
-              className="w-24 h-24 mx-auto rounded-full mb-4"
-            />
-            <h3 className="text-xl font-bold">
-              <Link
-                to={`/crew/${index}`}
-                className="text-blue-500 hover:underline"
-              >
+          <Link to={`/crew/${index}`} key={index}>
+            <div className="section-card text-center hover:shadow-lg transition-shadow">
+              <img
+                src="/api/placeholder/150/150"
+                alt={member.name}
+                className="w-24 h-24 mx-auto rounded-full mb-4"
+              />
+              <h3 className="text-xl font-bold hover:text-blue-500">
                 {member.name}
-              </Link>
-            </h3>
-            <p className="text-gray-500">{member.role}</p>
-          </div>
+              </h3>
+              <p className="text-gray-500">{member.role}</p>
+            </div>
+          </Link>
         ))}
       </div>
     </div>
