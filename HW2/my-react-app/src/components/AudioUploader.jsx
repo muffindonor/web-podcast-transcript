@@ -49,7 +49,7 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
       const transcriptResponse = await fetch('https://api.assemblyai.com/v2/transcript', {
         method: 'POST',
         headers: {
-          'Authorization': '361415b9f3e244d5abc4def7278d3005',  // Replace with your actual API key
+          'Authorization': 'import.meta.env.VITE_ASSEMBLY_AI_KEY',  // Replace with your actual API key
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
