@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { auth, db } from '../firebase';
+import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import AudioUploader from '../components/AudioUploader';
 import StarRating from '../components/StarRating';
 import { Search, Clock, FileText, ListTodo, BookOpen } from 'lucide-react';
@@ -12,8 +14,16 @@ const Home = () => {
   });
   const [summary, setSummary] = useState('');
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [user, setUser] = useState(null);
 
-  /*const formatTime = (timeInSeconds) => {
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const formatTime = (timeInSeconds) => {
     const hours = Math.floor(timeInSeconds / 3600);
     const minutes = Math.floor((timeInSeconds % 3600) / 60);
     const seconds = timeInSeconds % 60;
@@ -21,11 +31,43 @@ const Home = () => {
     const pad = (num) => num.toString().padStart(2, '0');
 
     if (hours > 0) {
-      return ${pad(hours)}:${pad(minutes)}:${pad(seconds)};
+      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
     }
-    return ${pad(minutes)}:${pad(seconds)};
-  };*/
+    return `${pad(minutes)}:${pad(seconds)}`;
+  };
 
+  const saveTranscriptionToFirestore = async (transcriptionData) => {
+    if (!user) return;
+
+    try {
+      const userRef = doc(db, "users", user.uid);
+      
+      const userDoc = await getDoc(userRef);
+      
+      if (userDoc.exists()) {
+        await updateDoc(userRef, {
+          transcriptions: arrayUnion({
+            id: Date.now().toString(),
+            ...transcriptionData,
+            timestamp: new Date()
+          })
+        });
+      }
+    } catch (error) {
+      console.error("Error saving transcription:", error);
+    }
+  };
+
+  const handleTranscriptionComplete = async (result) => {
+    setTranscriptionResult(result);
+    if (user) {
+      await saveTranscriptionToFirestore({
+        text: result.text,
+        chapters: result.chapters,
+        speakers: result.speakers
+      });
+    }
+  };
 
   const generateSummary = async () => {
     setIsGeneratingSummary(true);
@@ -35,7 +77,7 @@ const Home = () => {
         {
           method: "POST",
           headers: {
-            "Authorization": "Bearer ${import.meta.env.VITE_HUGGING_FACE_KEY}", // COPY THE TOKEN FROM THE .ENV FILE
+            "Authorization": `Bearer ${import.meta.env.VITE_HUGGING_FACE_KEY}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -49,7 +91,25 @@ const Home = () => {
       );
 
       const result = await response.json();
-      setSummary(result[0].summary_text);
+      const newSummary = result[0].summary_text;
+      setSummary(newSummary);
+      
+      // Save updated summary to Firestore
+      if (user) {
+        const userRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists()) {
+          const transcriptions = userDoc.data().transcriptions;
+          const currentTranscription = transcriptions[transcriptions.length - 1];
+          if (currentTranscription) {
+            currentTranscription.summary = newSummary;
+            await updateDoc(userRef, {
+              transcriptions: transcriptions
+            });
+          }
+        }
+      }
     } catch (error) {
       console.error("Error generating summary:", error);
       setSummary("Error generating summary. Please try again.");
@@ -66,7 +126,7 @@ const Home = () => {
       </p>
 
       <section className="mb-12">
-        <AudioUploader onTranscriptionComplete={setTranscriptionResult} />
+        <AudioUploader onTranscriptionComplete={handleTranscriptionComplete} />
       </section>
 
       <div className="content-grid">
@@ -164,4 +224,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Home;
