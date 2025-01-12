@@ -49,7 +49,7 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
       const transcriptResponse = await fetch('https://api.assemblyai.com/v2/transcript', {
         method: 'POST',
         headers: {
-          'Authorization': import.meta.env.VITE_ASSEMBLY_AI_KEY,  // Replace with your actual API key
+          'Authorization': 'import.meta.env.VITE_ASSEMBLY_AI_KEY',  // Replace with your actual API key
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -61,7 +61,7 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
       });
 
       if (!transcriptResponse.ok) {  // Check if the transcription request was successful
-        throw new Error('Transcription request failed: ' + await transcriptResponse.text());
+        throw new Error('Transcription request failed during A: ' + await transcriptResponse.text());
       }
 
       const transcriptResult = await transcriptResponse.json();  // Parse the transcription response
