@@ -1,20 +1,34 @@
 // Register.jsx
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { setDoc, doc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 import { Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // Create authentication user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Create user document in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        createdAt: new Date(),
+        transcriptions: []
+      });
+
       alert("Registration successful");
+      navigate('/');
     } catch (err) {
       setError(err.message);
     }
