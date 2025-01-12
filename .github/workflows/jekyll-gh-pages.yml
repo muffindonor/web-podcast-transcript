@@ -1,5 +1,4 @@
-# Sample workflow for building and deploying a Jekyll site to GitHub Pages
-name: Deploy Jekyll with GitHub Pages dependencies preinstalled
+name: Deploy React App to GitHub Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -9,14 +8,11 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -26,17 +22,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          source: ./HW2
-          destination: ./_site
-      - name: Upload artifact
+          node-version: '16'  # Specify the Node.js version for your React app
+
+      - name: Install dependencies
+        working-directory: ./HW2/my-react-app
+        run: |
+          npm install
+
+      - name: Build React app
+        working-directory: ./HW2/my-react-app
+        run: |
+          npm run build
+
+      - name: Upload build artifact
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./HW2/my-react-app/build  # The build folder to deploy
 
   # Deployment job
   deploy:
@@ -49,3 +56,6 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          branch: gh-pages  # Deploy to the gh-pages branch
+          folder: ./HW2/my-react-app/build  # The build folder from the React app
