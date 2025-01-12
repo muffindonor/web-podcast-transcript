@@ -77,7 +77,7 @@ const Home = () => {
         {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${import.meta.env.VITE_HUGGING_FACE_KEY}`,
+            "Authorization": `Bearer ${import.meta.env.VITE_HUGGING_FACE_KEY}`, //Replace ${import.meta.env.VITE_HUGGING_FACE_KEY} with key
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
