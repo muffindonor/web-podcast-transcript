@@ -2,6 +2,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import teamMembers from '../data/teamMembers';
+import deKuala from '../data/deKuala.jpeg';
 
 const CrewDetail = () => {
   const { id } = useParams();
@@ -19,7 +20,7 @@ const CrewDetail = () => {
     <div className="min-h-screen pt-20 px-4 md:px-8 max-w-4xl mx-auto">
       <div className="section-card text-center hover:shadow-lg transition-shadow">
         <img
-          src="/api/placeholder/150/150"
+          src={parseInt(id) === 4 ? deKuala : "/api/placeholder/150/150"} 
           alt={member.name}
           className="w-40 h-40 mx-auto rounded-full mb-4"
         />

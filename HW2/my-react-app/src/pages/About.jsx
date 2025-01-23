@@ -2,6 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import teamMembers from '../data/teamMembers';
+import deKuala from '../data/deKuala.jpeg';
 
 const About = () => {
   return (
@@ -23,7 +24,7 @@ const About = () => {
           <Link to={`/crew/${index}`} key={index}>
             <div className="section-card text-center hover:shadow-lg transition-shadow">
               <img
-                src="/api/placeholder/150/150"
+                src={index === 4 ? deKuala : "/api/placeholder/150/150"}
                 alt={member.name}
                 className="w-24 h-24 mx-auto rounded-full mb-4"
               />

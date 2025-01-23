@@ -2,34 +2,34 @@
 
 const teamMembers = [
     {
-      name: "Sam Martin-Ross",
-      role: "Founder & MD",
-      contact: "sam@soundscribe.com",
-      bio: "Sam is the visionary behind SoundScribe. With years of experience in tech, he leads the team with passion and innovation.",
+      name: "Shay ",
+      role: "Founder & Team leader",
+      contact: "shay.@e.braude.ac.il",
+      bio: "Shay drives the team's vision and execution as founder, combining technical expertise with strategic leadership to guide innovative solutions and team development.",
     },
     {
-      name: "Johnny Craston",
-      role: "PPC Team Lead",
-      contact: "johnny@soundscribe.com",
-      bio: "Johnny is an expert in paid advertising and ensures every campaign brings outstanding results for our clients.",
+      name: "Danny",
+      role: "QA Lead",
+      contact: "danny.@e.braude.ac.il",
+      bio: "Danny leads quality assurance, implementing robust testing strategies and automation frameworks to ensure product reliability and performance excellence.",
     },
     {
-      name: "Alice Harper",
+      name: "Shahed ",
       role: "Head of Design",
-      contact: "alice@soundscribe.com",
-      bio: "Alice is the creative force behind our platform's design, ensuring a seamless and beautiful user experience.",
+      contact: "shahed.@e.braude.ac.il",
+      bio: "Shahed crafts intuitive and visually striking designs that elevate the user experience, balancing aesthetics with functionality while leading the design team's creative direction.",
     },
     {
-      name: "David Nguyen",
-      role: "Lead Developer",
-      contact: "david@soundscribe.com",
-      bio: "David is the brains behind SoundScribe's cutting-edge technology, always innovating and solving complex challenges.",
+      name: "Hiba Abo Qandil",
+      role: "Project Architect",
+      contact: "hiba.abo@e.braude.ac.il",
+      bio: "Hiba leads the architectural design and technical strategy, leveraging her expertise to create scalable solutions while maintaining system integrity and guiding development teams.",
     },
     {
-      name: "Sophia Patel",
-      role: "Marketing Strategist",
-      contact: "sophia@soundscribe.com",
-      bio: "Sophia ensures that SoundScribe reaches the right audience with her expert marketing strategies.",
+      name: "Abed El Hamid Ammar",
+      role: "Dev Ops lead",
+      contact: "abed.ammar@e.braude.ac.il",
+      bio: "Abed leads the infrastructure and deployment operations, ensuring seamless system reliability and scalability through automated CI/CD pipelines and cloud architecture optimization.",
     },
   ];
   

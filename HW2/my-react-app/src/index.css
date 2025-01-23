@@ -53,11 +53,33 @@ body {
 }
 
 .section-content {
-  @apply rounded-lg p-4 min-h-[200px];
+  @apply rounded-lg p-4;
   background-color: var(--secondary-bg);
   border: 1px solid black; 
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
 }
 
+/* Custom scrollbar styling for webkit browsers */
+.section-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.section-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.section-content::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 20px;
+}
+
+/* Dark mode scrollbar */
+[data-theme='dark'] .section-content::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+}
 
 [data-theme='dark'] .section-card,
 [data-theme='dark'] .section-content {
@@ -105,7 +127,37 @@ body {
 }
 
 .content-grid {
-  @apply grid grid-cols-1 md:grid-cols-2 gap-6 mb-12;
+  @apply grid grid-cols-1 gap-6 mb-12;
+  grid-template-areas: 
+    "text"
+    "summary"
+    "timestamps"
+    "search";
+}
+
+@screen md {
+  .content-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas: 
+      "text text text"
+      "summary timestamps search";
+  }
+}
+
+.content-grid .transcribed-text {
+  grid-area: text;
+}
+
+.content-grid .summary-section {
+  grid-area: summary;
+}
+
+.content-grid .timestamp-section {
+  grid-area: timestamps;
+}
+
+.content-grid .search-section {
+  grid-area: search;
 }
 
 .generate-button {
@@ -117,7 +169,17 @@ body {
   @apply bg-gray-400 cursor-not-allowed;
 }
 
+/* Highlight Styles */
+.highlight {
+  background-color: rgba(59, 130, 246, 0.2);
+  padding: 0.1em 0;
+  border-radius: 2px;
+  transition: background-color 0.3s ease;
+}
 
+[data-theme='dark'] .highlight {
+  background-color: rgba(96, 165, 250, 0.3);
+}
 
 /* Crew Section Specific Styles */
 .crew-card {
