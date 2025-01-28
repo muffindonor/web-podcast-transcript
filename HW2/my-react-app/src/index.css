@@ -205,3 +205,29 @@ body {
   @apply text-sm text-gray-600;
   color: var(--secondary-text);
 }
+
+.search-results {
+  @apply mt-4 space-y-2;
+}
+
+.search-result-item {
+  @apply flex items-start gap-2 p-2 rounded-lg;
+  background-color: var(--secondary-bg);
+}
+
+[data-theme='dark'] .search-result-item {
+  @apply bg-gray-800;
+}
+
+.search-result-count {
+  color: var(--primary-text);
+}
+
+.search-result-timestamp {
+  @apply text-sm font-medium;
+  color: var(--primary-text);
+}
+
+.search-result-text {
+  color: var(--primary-text);
+}

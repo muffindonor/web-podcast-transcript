@@ -1,7 +1,12 @@
+// AudioUploader.jsx
 import { useState } from 'react';
 import { FileAudio } from 'lucide-react';
+import { useLanguage } from '../utils/LanguageContext';
+import LanguageSelector from './LanguageSelector';
+import { extractTitle } from '../utils/utils';
 
 const AudioUploader = ({ onTranscriptionComplete }) => {
+  const { language } = useLanguage();
   const [file, setFile] = useState(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -15,6 +20,32 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
     }
   };
 
+  const getTranscriptionBody = (language, uploadResult) => {
+    switch (language) {
+      case 'he':
+      case 'ar':
+        return {
+          audio_url: uploadResult.upload_url,
+          language_code: language,
+          speech_model: "nano",
+          punctuate: true,
+          format_text: true
+        };
+      case 'en_us':
+        return {
+          audio_url: uploadResult.upload_url,
+          language_code: language,
+          punctuate: true,
+          format_text: true,
+          summarization: true,
+          summary_model: "informative",
+          summary_type: "bullets"
+        };
+      default:
+        throw new Error('Unsupported language');
+    }
+  };
+
   const handleTranscribe = async () => {
     if (!file) {
       setError('No file selected');
@@ -24,9 +55,7 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
     try {
       setError(null);
       setIsTranscribing(true);
-      console.log('Starting transcription process...', file);
 
-      // Upload file to AssemblyAI
       const uploadResponse = await fetch('https://api.assemblyai.com/v2/upload', {
         method: 'POST',
         headers: {
@@ -40,34 +69,24 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
       }
 
       const uploadResult = await uploadResponse.json();
-      console.log('Upload successful, URL:', uploadResult.upload_url);
 
-      // Request transcription with summarization
       const transcriptResponse = await fetch('https://api.assemblyai.com/v2/transcript', {
         method: 'POST',
         headers: {
           'Authorization': '361415b9f3e244d5abc4def7278d3005',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          audio_url: uploadResult.upload_url,
-          language_code: "en_us",
-          punctuate: true,
-          format_text: true,
-          summarization: true,
-          summary_model: "informative",
-          summary_type: "bullets"
-        })
+        body: JSON.stringify(getTranscriptionBody(language, uploadResult))
       });
 
       if (!transcriptResponse.ok) {
-        throw new Error('Transcription request failed: ' + await transcriptResponse.text());
+        const errorText = await transcriptResponse.text();
+        console.log('Error details:', errorText);
+        throw new Error('Transcription request failed: ' + errorText);
       }
 
       const transcriptResult = await transcriptResponse.json();
-      console.log('Transcription initiated:', transcriptResult);
 
-      // Poll for completion
       const checkCompletion = async (transcriptId) => {
         const pollingEndpoint = `https://api.assemblyai.com/v2/transcript/${transcriptId}`;
         let attempts = 0;
@@ -91,15 +110,15 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
             }
 
             const result = await pollResponse.json();
-            console.log(`Attempt ${attempts + 1}, Status: ${result.status}`);
 
             if (result.status === 'completed') {
               clearInterval(pollInterval);
               onTranscriptionComplete({
                 text: result.text || '',
-                summary: result.summary || '',
+                summary: language === 'en_us' ? (result.summary || '') : '',
                 words: result.words || [],
-                audio_url: uploadResult.upload_url
+                audio_url: uploadResult.upload_url,
+                title: extractTitle(file.name)
               });
               setIsTranscribing(false);
             } else if (result.status === 'error') {
@@ -110,7 +129,6 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
             attempts++;
           } catch (error) {
             clearInterval(pollInterval);
-            console.error('Polling error:', error);
             setError(error.message);
             setIsTranscribing(false);
           }
@@ -120,7 +138,6 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
       await checkCompletion(transcriptResult.id);
 
     } catch (error) {
-      console.error('Transcription process error:', error);
       setError(error.message);
       setIsTranscribing(false);
     }
@@ -128,6 +145,7 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      <LanguageSelector />
       <label 
         htmlFor="audio-upload" 
         className={`relative block p-8 border-2 border-dashed rounded-xl cursor-pointer 

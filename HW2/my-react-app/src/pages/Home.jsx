@@ -1,3 +1,4 @@
+// Home.jsx
 import TimestampDisplay from '../components/TimestampDisplay';
 import { useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
@@ -6,14 +7,18 @@ import AudioUploader from '../components/AudioUploader';
 import StarRating from '../components/StarRating';
 import { Search, FileText, BookOpen } from 'lucide-react';
 import HighlightedText from '../components/HighlightedText';
+import { useLanguage } from '../utils/LanguageContext';
+import SearchResults from '../components/SearchResults';
 
 const Home = () => {
+  const { language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [transcriptionResult, setTranscriptionResult] = useState({
     text: '',
     summary: '',
     words: [],
-    audio_url: ''
+    audio_url: '',
+    title: ''
   });
   const [user, setUser] = useState(null);
 
@@ -26,11 +31,9 @@ const Home = () => {
 
   const saveTranscriptionToFirestore = async (transcriptionData) => {
     if (!user) return;
-
     try {
       const userRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userRef);
-      
       if (userDoc.exists()) {
         await updateDoc(userRef, {
           transcriptions: arrayUnion({
@@ -52,9 +55,15 @@ const Home = () => {
         text: result.text,
         summary: result.summary,
         words: result.words,
-        audio_url: result.audio_url
+        audio_url: result.audio_url,
+        title: result.title
       });
     }
+  };
+
+  // Set text direction based on language
+  const getTextDirection = () => {
+    return language === 'ar' || language === 'he' ? 'rtl' : 'ltr';
   };
 
   return (
@@ -73,8 +82,13 @@ const Home = () => {
           <h2 className="section-title">
             <FileText size={24} className="text-blue-500" />
             Transcribed Text
+            {transcriptionResult.title && (
+              <span className="ml-2 text-sm font-normal text-gray-500">
+                - {transcriptionResult.title}
+              </span>
+            )}
           </h2>
-          <div className="section-content">
+          <div className={`section-content`} dir={getTextDirection()}>
             <HighlightedText 
               text={transcriptionResult.text || 'Your transcribed text will appear here...'} 
               searchQuery={searchQuery}
@@ -82,18 +96,20 @@ const Home = () => {
           </div>
         </section>
 
-        <section className="section-card summary-section">
-          <h2 className="section-title">
-            <BookOpen size={24} className="text-blue-500" />
-            Summary
-          </h2>
-          <div className="section-content mb-4">
-            <HighlightedText 
-              text={transcriptionResult.summary || 'Summary will appear here...'} 
-              searchQuery={searchQuery}
-            />
-          </div>
-        </section>
+        {language === 'en_us' && (
+          <section className="section-card summary-section">
+            <h2 className="section-title">
+              <BookOpen size={24} className="text-blue-500" />
+              Summary
+            </h2>
+            <div className="section-content mb-4">
+              <HighlightedText 
+                text={transcriptionResult.summary || 'Summary will appear here...'} 
+                searchQuery={searchQuery}
+              />
+            </div>
+          </section>
+        )}
 
         <div className="timestamp-section">
           <TimestampDisplay 
@@ -113,6 +129,11 @@ const Home = () => {
             className="search-input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            dir={getTextDirection()}
+          />
+          <SearchResults 
+            words={transcriptionResult.words} 
+            searchQuery={searchQuery}
           />
         </section>
       </div>

@@ -5,20 +5,23 @@ import About from './pages/About';
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import CrewDetail from './pages/CrewDetail';
+import { LanguageProvider } from './utils/LanguageContext';
 import './index.css'
 
 function App() {
   return (
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/crew/:id" element={<CrewDetail />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </Router>
+    <LanguageProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/crew/:id" element={<CrewDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </Router>
+    </LanguageProvider>
   );
 }
 
