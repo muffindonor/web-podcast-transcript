@@ -1,17 +1,40 @@
-// AudioUploader.jsx
+/**
+ * AudioUploader Component
+ * 
+ * Handles audio file uploads and transcription using the AssemblyAI API.
+ * Provides a user interface for file selection, language selection, and transcription progress.
+ * 
+ * @component
+ * @param {Object} props
+ * @param {Function} props.onTranscriptionComplete - Callback function called with transcription results
+ */
+
 import { useState } from 'react';
 import { FileAudio } from 'lucide-react';
 import { useLanguage } from '../utils/LanguageContext';
 import LanguageSelector from './LanguageSelector';
 import { extractTitle } from '../utils/utils';
 
+// API configuration
+const API_KEY = "361415b9f3e244d5abc4def7278d3005";
+const API_ENDPOINTS = {
+  UPLOAD: 'https://api.assemblyai.com/v2/upload',
+  TRANSCRIPT: 'https://api.assemblyai.com/v2/transcript'
+};
+
 const AudioUploader = ({ onTranscriptionComplete }) => {
+  // State management for file upload and transcription process
   const { language } = useLanguage();
   const [file, setFile] = useState(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState(null);
 
+  /**
+   * Handles file selection and validation
+   * Only accepts audio files
+   * @param {Event} e - File input change event
+   */
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile && selectedFile.type.includes('audio')) {
@@ -20,6 +43,13 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
     }
   };
 
+  /**
+   * Constructs the transcription request body based on selected language
+   * Different configurations for different languages (Hebrew, Arabic, English)
+   * @param {string} language - Selected language code
+   * @param {Object} uploadResult - File upload response from API
+   * @returns {Object} Transcription request configuration
+   */
   const getTranscriptionBody = (language, uploadResult) => {
     switch (language) {
       case 'he':
@@ -46,6 +76,14 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
     }
   };
 
+  /**
+   * Main transcription handler
+   * Manages the complete process of:
+   * 1. File upload to AssemblyAI
+   * 2. Initiating transcription
+   * 3. Polling for completion
+   * 4. Error handling
+   */
   const handleTranscribe = async () => {
     if (!file) {
       setError('No file selected');
@@ -56,11 +94,10 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
       setError(null);
       setIsTranscribing(true);
 
-      const uploadResponse = await fetch('https://api.assemblyai.com/v2/upload', {
+      // Step 1: Upload file to AssemblyAI
+      const uploadResponse = await fetch(API_ENDPOINTS.UPLOAD, {
         method: 'POST',
-        headers: {
-          'Authorization': "361415b9f3e244d5abc4def7278d3005"
-        },
+        headers: { 'Authorization': API_KEY },
         body: file
       });
 
@@ -70,10 +107,11 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
 
       const uploadResult = await uploadResponse.json();
 
-      const transcriptResponse = await fetch('https://api.assemblyai.com/v2/transcript', {
+      // Step 2: Request transcription
+      const transcriptResponse = await fetch(API_ENDPOINTS.TRANSCRIPT, {
         method: 'POST',
         headers: {
-          'Authorization': '361415b9f3e244d5abc4def7278d3005',
+          'Authorization': API_KEY,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(getTranscriptionBody(language, uploadResult))
@@ -87,8 +125,12 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
 
       const transcriptResult = await transcriptResponse.json();
 
+      /**
+       * Polls the API for transcription completion
+       * @param {string} transcriptId - ID of the transcription job
+       */
       const checkCompletion = async (transcriptId) => {
-        const pollingEndpoint = `https://api.assemblyai.com/v2/transcript/${transcriptId}`;
+        const pollingEndpoint = `${API_ENDPOINTS.TRANSCRIPT}/${transcriptId}`;
         let attempts = 0;
         const maxAttempts = 40;
 
@@ -102,7 +144,7 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
 
           try {
             const pollResponse = await fetch(pollingEndpoint, {
-              headers: { 'Authorization': "361415b9f3e244d5abc4def7278d3005" }
+              headers: { 'Authorization': API_KEY }
             });
 
             if (!pollResponse.ok) {
@@ -111,6 +153,7 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
 
             const result = await pollResponse.json();
 
+            // Handle completion or continue polling
             if (result.status === 'completed') {
               clearInterval(pollInterval);
               onTranscriptionComplete({
@@ -145,7 +188,10 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      {/* Language selection component */}
       <LanguageSelector />
+      
+      {/* File upload area with dynamic styling */}
       <label 
         htmlFor="audio-upload" 
         className={`relative block p-8 border-2 border-dashed rounded-xl cursor-pointer 
@@ -166,6 +212,8 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
           </div>
         </div>
       </label>
+
+      {/* Hidden file input */}
       <input
         id="audio-upload"
         type="file"
@@ -174,12 +222,14 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
         className="hidden"
       />
 
+      {/* Error display */}
       {error && (
         <div className="mt-4 p-3 text-sm text-red-500 bg-red-50 rounded-lg">
           {error}
         </div>
       )}
 
+      {/* Transcription controls and progress */}
       {file && (
         <div className="mt-4">
           <button
@@ -194,6 +244,7 @@ const AudioUploader = ({ onTranscriptionComplete }) => {
             {isTranscribing ? 'Transcribing...' : 'Start Transcription'}
           </button>
 
+          {/* Upload progress indicator */}
           {isTranscribing && (
             <div className="mt-2">
               <div className="h-2 bg-gray-200 rounded-full">

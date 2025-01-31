@@ -1,4 +1,17 @@
-// Home.jsx
+/**
+ * Home.jsx
+ * Main page component of SoundScribe application.
+ * Handles audio file transcription, text search, and result display.
+ * 
+ * Key Features:
+ * - Audio file upload and transcription
+ * - Multi-language support (English, Hebrew, Arabic)
+ * - Text search functionality
+ * - Timestamp-based navigation
+ * - User feedback collection
+ * - Automatic transcription saving for logged-in users
+ */
+
 import TimestampDisplay from '../components/TimestampDisplay';
 import { useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
@@ -11,24 +24,42 @@ import { useLanguage } from '../utils/LanguageContext';
 import SearchResults from '../components/SearchResults';
 
 const Home = () => {
+  // Language context for multi-language support
   const { language } = useLanguage();
+
+  // State management
   const [searchQuery, setSearchQuery] = useState('');
   const [transcriptionResult, setTranscriptionResult] = useState({
-    text: '',
-    summary: '',
-    words: [],
-    audio_url: '',
-    title: ''
+    text: '',          // Transcribed text content
+    summary: '',       // Summary (English only)
+    words: [],         // Word-level timing data
+    audio_url: '',     // Source audio file URL
+    title: ''          // Transcription title
   });
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null);  // Current authenticated user
 
+  /**
+   * Firebase authentication listener
+   * Updates user state when auth state changes
+   */
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
     });
-    return () => unsubscribe();
+    return () => unsubscribe();  // Cleanup on unmount
   }, []);
 
+  /**
+   * Saves transcription data to Firestore for authenticated users
+   * Adds timestamp and unique ID to transcription data
+   * 
+   * @param {Object} transcriptionData - Transcription result to save
+   * @param {string} transcriptionData.text - Transcribed text
+   * @param {string} transcriptionData.summary - Summary (if available)
+   * @param {Array} transcriptionData.words - Word timing data
+   * @param {string} transcriptionData.audio_url - Audio file URL
+   * @param {string} transcriptionData.title - Transcription title
+   */
   const saveTranscriptionToFirestore = async (transcriptionData) => {
     if (!user) return;
     try {
@@ -48,6 +79,12 @@ const Home = () => {
     }
   };
 
+  /**
+   * Handles successful transcription completion
+   * Updates local state and saves to Firestore
+   * 
+   * @param {Object} result - Transcription API result
+   */
   const handleTranscriptionComplete = async (result) => {
     setTranscriptionResult(result);
     if (user) {
@@ -61,23 +98,30 @@ const Home = () => {
     }
   };
 
-  // Set text direction based on language
+  /**
+   * Determines text direction based on selected language
+   * Returns 'rtl' for Arabic/Hebrew, 'ltr' for others
+   */
   const getTextDirection = () => {
     return language === 'ar' || language === 'he' ? 'rtl' : 'ltr';
   };
 
   return (
     <div className="min-h-screen pt-20 px-4 md:px-8 max-w-7xl mx-auto">
+      {/* Page Header */}
       <h1 className="main-title">Transform Audio to Text</h1>
       <p className="main-subtitle">
         Convert your audio files to text with high accuracy using SoundScribe
       </p>
 
+      {/* Audio Upload Section */}
       <section className="mb-12">
         <AudioUploader onTranscriptionComplete={handleTranscriptionComplete} />
       </section>
 
+      {/* Results Grid */}
       <div className="content-grid">
+        {/* Transcribed Text Section */}
         <section className="section-card transcribed-text">
           <h2 className="section-title">
             <FileText size={24} className="text-blue-500" />
@@ -96,6 +140,7 @@ const Home = () => {
           </div>
         </section>
 
+        {/* Summary Section - English Only */}
         {language === 'en_us' && (
           <section className="section-card summary-section">
             <h2 className="section-title">
@@ -111,6 +156,7 @@ const Home = () => {
           </section>
         )}
 
+        {/* Timestamp Navigation Section */}
         <div className="timestamp-section">
           <TimestampDisplay 
             words={transcriptionResult.words} 
@@ -118,6 +164,7 @@ const Home = () => {
           />
         </div>
 
+        {/* Search Section */}
         <section className="section-card search-section">
           <h2 className="section-title">
             <Search size={24} className="text-blue-500" />
@@ -138,6 +185,7 @@ const Home = () => {
         </section>
       </div>
 
+      {/* User Feedback Section */}
       <section className="section-card text-center mb-12">
         <h2 className="section-title justify-center">Rate Your Experience</h2>
         <StarRating />
