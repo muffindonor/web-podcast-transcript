@@ -46,7 +46,7 @@ const LanguageSelector = () => {
           className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors
             ${language === code 
               ? 'bg-blue-500 text-white' // Active language styling
-              : 'bg-gray-100 hover:bg-gray-200'}`} // Inactive language styling
+              : 'hover:bg-gray-200 border hover:border-gray-300'}`} // Inactive language styling
         >
           {/* Flag emoji and language name */}
           <span>{flag}</span>
