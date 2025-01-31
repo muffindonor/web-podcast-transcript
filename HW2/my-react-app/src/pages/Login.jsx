@@ -13,7 +13,8 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react'; // Using the same icon library as Home.jsx
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   // Form state management
@@ -21,6 +22,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  
 
   /**
    * Handles form submission and user authentication
@@ -34,6 +37,7 @@ const Login = () => {
       // Attempt Firebase authentication
       await signInWithEmailAndPassword(auth, email, password);
       alert("Login successful");
+      navigate('/');
     } catch (err) {
       // Handle authentication errors
       setError(err.message);
